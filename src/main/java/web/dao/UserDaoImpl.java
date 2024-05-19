@@ -1,16 +1,14 @@
 package web.dao;
 
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import web.model.User;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.List;
+import javax.persistence.*;
+import java.util.*;
 
-
-@Service
+@Repository
 @Transactional
 public class UserDaoImpl implements UserDao {
 
@@ -18,37 +16,27 @@ public class UserDaoImpl implements UserDao {
     private EntityManager entityManager;
 
     @Override
-    public List<User> getAllUsers() {
+    public void saveUser(User user) {
+        entityManager.persist(user);
+    }
+
+    @Override
+    public List<User> allUser() {
         return entityManager.createQuery("select u from User u", User.class).getResultList();
     }
 
     @Override
-    public User getUserById(Long id) {
-        return entityManager.find(User.class, id);
+    public Optional<User> findById(Long id) {
+        return Optional.ofNullable(entityManager.find(User.class, id));
     }
 
     @Override
-    public User updateUser(User user) {
+    public void updateUser(User user) {
         entityManager.merge(user);
-        entityManager.flush();
-        return user;
     }
 
     @Override
-    public User addUser(User user) {
-        entityManager.persist(user);
-        entityManager.flush();
-        return user;
-    }
-
-    @Override
-    public User deleteUser(Long id) {
-        User user = getUserById(id);
-        if (null == user) {
-            throw new NullPointerException("User not found");
-        }
-        entityManager.remove(user);
-        entityManager.flush();
-        return user;
+    public void deleteById(Long id) {
+        findById(id).ifPresent(entityManager::remove);
     }
 }

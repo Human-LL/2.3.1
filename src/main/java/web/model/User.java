@@ -1,20 +1,15 @@
 package web.model;
 
-
 import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "users")
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
+@Table(name = "user")
 @ToString
-@Data
+@Setter
+@Getter
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,4 +19,7 @@ public class User {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "age")
+    private Integer age;
 }

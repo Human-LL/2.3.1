@@ -1,65 +1,60 @@
     package web.controller;
 
+
+
     import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.http.HttpStatus;
-    import org.springframework.http.ResponseEntity;
+    import org.springframework.stereotype.Controller;
+    import org.springframework.ui.Model;
     import org.springframework.web.bind.annotation.*;
     import web.model.User;
     import web.service.UserService;
 
-    import javax.servlet.http.HttpServletRequest;
-    import java.util.List;
+    import javax.validation.Valid;
 
-    @RestController
+    @Controller
     @RequestMapping("/users")
     public class UserController {
+
+        private final UserService userService;
+
         @Autowired
-        private UserService userService;
-
-        @GetMapping("/all")
-        public ResponseEntity<List<User>> getAllUsers() {
-            List<User> users = userService.getAllUsers();
-            if (users.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-            return new ResponseEntity<>(users, HttpStatus.OK);
+        public UserController(UserService userService) {
+            this.userService = userService;
         }
 
-        @PostMapping("/add")
-        public ResponseEntity<User> addUser(@RequestBody User user) {
-            User newUser = userService.addUser(user);
-            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        @GetMapping
+        public String allUsers(Model model) {
+            model.addAttribute("users", userService.allUser());
+            return "user/user-list";
         }
 
-        @GetMapping("/by-id")
-        public ResponseEntity getUserById(HttpServletRequest request) {
-            String idStr = request.getParameter("id");
-            if (idStr == null) {
-                return ResponseEntity.badRequest().build();
-            }
-            Long id = Long.valueOf(idStr);
-
-            User user = userService.getUserById(id);
-            if (user == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(user);
+        @GetMapping("/new")
+        public String createUserForm(Model model) {
+            model.addAttribute("user", new User());
+            return "user/user-create";
         }
 
-        @PostMapping("/update")
-        public ResponseEntity<User> updateUser(@RequestBody User updatedUser) {
-            User user = userService.updateUser(updatedUser.getId(), updatedUser);
-            if (user != null) {
-                return new ResponseEntity<>(user, HttpStatus.OK);
-            }
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        @PostMapping
+        public String createUser(@ModelAttribute("user") @Valid User user) {
+            userService.saveUser(user);
+            return "redirect:/users";
         }
-        @GetMapping("/delete")
-        public ResponseEntity<Void> deleteUser(@RequestParam Long id) {
-            if (id != null) {
-                userService.deleteUser(id);
-                return ResponseEntity.ok().build();
-            }
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        @GetMapping("/edit")
+        public String editUserForm(@RequestParam("id") Long id, Model model) {
+            userService.findById(id).ifPresent(model::addAttribute);
+            return "user/edit-user";
+        }
+
+        @PostMapping("/edit")
+        public String editUser(@ModelAttribute("user") @Valid User user) {
+            userService.updateUser(user);
+            return "redirect:/users";
+        }
+
+        @PostMapping("/delete")
+        public String deleteUser(@RequestParam("id") Long id) {
+            userService.deleteById(id);
+            return "redirect:/users";
         }
     }

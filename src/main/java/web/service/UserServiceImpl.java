@@ -2,57 +2,49 @@ package web.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import web.dao.UserDao;
 import web.model.User;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserDao userDao;
+    private final UserDao userDao;
 
-    public UserServiceImpl() {
+    @Autowired
+    public UserServiceImpl(UserDao userDao) {
         this.userDao = userDao;
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userDao.getAllUsers();
+    @Transactional
+    public List<User> allUser() {
+        return userDao.allUser();
     }
 
     @Override
-    public User getUserById(Long id) {
-        User user = userDao.getUserById(id);
-        if (user == null) {
-            return null;
-        }
-        return user;
+    @Transactional
+    public Optional<User> findById(Long id) {
+        return userDao.findById(id);
     }
 
     @Override
-    public User addUser(User user) {
-        return userDao.addUser(user);
+    @Transactional
+    public void updateUser(User user) {
+        userDao.updateUser(user);
     }
 
     @Override
-    public User updateUser(Long id, User user) {
-        User existingUser = userDao.getUserById(id);
-        if (existingUser == null) {
-            return null;
-        }
-
-        existingUser.setName(user.getName());
-        existingUser.setEmail(user.getEmail());
-        return userDao.updateUser(existingUser);
+    @Transactional
+    public void saveUser(User user) {
+        userDao.saveUser(user);
     }
 
     @Override
-    public User deleteUser(Long id) {
-        if (userDao.getUserById(id) == null) {
-            return null;
-        }
-        return userDao.deleteUser(id);
+    @Transactional
+    public void deleteById(Long id) {
+        userDao.deleteById(id);
     }
 }
