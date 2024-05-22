@@ -1,9 +1,9 @@
 package web.dao;
 
-
 import web.model.User;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public interface UserDao {
 
